@@ -1,0 +1,23 @@
+< {%
+    request.variables.set("clients", [ // test data
+        {"id": 1, "firstName": "George", "lastName": "Franklin", balance: 100},
+        {"id": 3, "firstName": "Eduardo", "lastName": "Rodriquez", balance: 10}
+    ])
+%}
+
+POST http://localhost:8080/api/v1/account/{{$.clients..id}}
+Content-Type: application/json
+
+{
+  "firstName": "{{$.clients..firstName}}",
+  "lastName": "{{$.clients..lastName}}",
+  "balance": "{{$.clients..balance}}"
+}
+
+> {%
+    let current = request.variables.get("clients")[request.iteration()]
+    client.test(`Account ${current.lastName} have initial balance ${current.balance}`, () => {
+        let responseBalance = jsonPath(response.body, "$.balance")
+        client.assert(responseBalance == current.balance)
+    })
+%}
